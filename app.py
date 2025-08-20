@@ -6,8 +6,7 @@ import asyncio
 import logging
 
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles  # 👈 para servir archivos estáticos
 from pydantic import BaseModel
 from typing import List, Dict
 from dotenv import load_dotenv
@@ -22,25 +21,9 @@ from segmentador_lft import cargar_articulos_lft
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# — Instancia única de FastAPI
-app = FastAPI()
-
-# — Montar carpeta static
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# — Ruta raíz: redirige a la interfaz Gradio
-@app.get("/")
-async def redirect_to_gradio():
-    return RedirectResponse(url="/gradio")
-
-# — Carga de entorno y datos con manejo de errores
-try:
-    load_dotenv()
-    ARTICULOS_LFT = cargar_articulos_lft()
-except Exception as e:
-    logger.error(f"Error al cargar artículos LFT: {e}")
-    ARTICULOS_LFT = {}
-
+# — Carga de entorno y datos
+load_dotenv()
+ARTICULOS_LFT = cargar_articulos_lft()
 REFORMAS_EXTENDIDAS = {
     "laboral": [
         "Outsourcing (2021): reforma que regula estrictamente la subcontratación laboral.",
@@ -68,9 +51,17 @@ REFORMAS_EXTENDIDAS = {
     }
 }
 
+# — FastAPI app
+app = FastAPI()
+
+# 👈 Servir carpeta static
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
 class ChatRequest(BaseModel):
     message: str
     history: List[Dict[str, str]] = []
+
 
 def clasificar_tema(texto: str) -> str:
     msg = texto.lower().strip()
@@ -103,6 +94,7 @@ def clasificar_tema(texto: str) -> str:
         return "saludo"
     return None
 
+
 def buscar_en_reformas(msg: str) -> str:
     m = msg.lower()
     if "salario mínimo" in m or "salario minimo" in m:
@@ -123,6 +115,7 @@ def buscar_en_reformas(msg: str) -> str:
             return texto
     return ""
 
+
 def respuesta_desactualizada(txt: str) -> bool:
     markers = [
         "no existe una ley llamada",
@@ -133,6 +126,7 @@ def respuesta_desactualizada(txt: str) -> bool:
     ]
     low = txt.lower()
     return any(marker in low for marker in markers)
+
 
 async def llamar_modelo(client, msgs: List[Dict[str, str]]):
     return await asyncio.wait_for(
@@ -145,6 +139,7 @@ async def llamar_modelo(client, msgs: List[Dict[str, str]]):
         ),
         timeout=10
     )
+
 
 @app.post("/chat")
 async def api_chat(request: Request, chat_req: ChatRequest):
@@ -289,13 +284,16 @@ async def api_chat(request: Request, chat_req: ChatRequest):
     except Exception as e:
         raise HTTPException(500, f"⚠️ Error interno: {e}")
 
+
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
 
-@app.get("/status")
-async def status():
+
+@app.get("/")
+async def root():
     return {"status": "API ok", "interface": "/gradio"}
+
 
 # — Tema personalizado
 custom_theme = Base(
@@ -304,6 +302,7 @@ custom_theme = Base(
     text_size="md",
     radius_size="md",
 )
+
 
 def create_gradio_interface():
     with gr.Blocks(
@@ -377,7 +376,7 @@ body {
         </div>
         """)
 
-        # … aquí continúa el resto de tu función sin cambios …
+        # ... aquí continúa el resto de tu función sin cambios ...
         chatbot = gr.Chatbot(label="SofIA", type="messages", height=500)
 
         def greet():
@@ -414,6 +413,7 @@ body {
 # Montar Gradio dentro de FastAPI
 gradio_app = create_gradio_interface()
 app = gr.mount_gradio_app(app, gradio_app, path="/gradio")
+
 
 if __name__ == "__main__":
     import uvicorn
