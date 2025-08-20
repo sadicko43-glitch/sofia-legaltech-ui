@@ -1,0 +1,46 @@
+/* HEADER */
+.app-header {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 56px;
+  display: flex; align-items: center;
+  background: linear-gradient(90deg, #4A2C9A, #6C3FA0);
+  padding: 0 16px; z-index: 100;
+}
+.app-header .logo { height: 40px; margin-right: 12px; }
+.app-header .app-title { font-size: 18px; color: #FFF; }
+
+/* SPLASH SCREEN */
+#splash-screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #6C3FA0, #8C57C8);
+  color: #FFF; text-align: center; z-index: 200;
+}
+.splash-logo { width: 200px; animation: pulseNodes 1.5s infinite ease-in-out; }
+@keyframes pulseNodes {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 #FFF); }
+  50%    { transform: scale(1.05); filter: drop-shadow(0 0 8px #FFF); }
+}
+#splash-screen h1 { margin-top: 24px; font-size: 24px; }
+#splash-screen p  { margin-top: 8px;  font-size: 14px; }
+
+/* SIDEBAR */
+.app-sidebar {
+  position: fixed; top: 0; left: 0;
+  width: 240px; height: 100vh;
+  background: #4A2C9A; padding: 24px 16px;
+}
+.sidebar-logo { display: flex; align-items: center; margin-bottom: 32px; }
+.sidebar-icon { width: 32px; height: 32px; margin-right:12px; }
+.sidebar-text { font-size: 16px; color: #FFF; }
+.sidebar-menu { list-style: none; padding: 0; }
+.sidebar-menu li { margin-bottom:16px; }
+.sidebar-menu a {
+  color: #FFF; text-decoration: none; font-size:14px;
+  transition: color .2s;
+}
+.sidebar-menu a:hover { color: #E0E0E0; }
+
+/* Ajuste main-content */
+.main-content { margin-left: 240px; padding: 80px 24px 24px; }
