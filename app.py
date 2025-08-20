@@ -1,4 +1,12 @@
 # app.py
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+
+app = FastAPI()
+
+@app.get("/")
+async def redirect_to_gradio():
+    return RedirectResponse(url="/gradio"
 
 import os
 import re
