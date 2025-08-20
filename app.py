@@ -6,14 +6,14 @@ app = FastAPI()
 
 @app.get("/")
 async def redirect_to_gradio():
-    return RedirectResponse(url="/gradio"
+    return RedirectResponse(url="/gradio")
 
 import os
 import re
 import asyncio
 import logging
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import Request, HTTPException
 from fastapi.staticfiles import StaticFiles  # 👈 para servir archivos estáticos
 from pydantic import BaseModel
 from typing import List, Dict
@@ -30,8 +30,13 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # — Carga de entorno y datos
-load_dotenv()
-ARTICULOS_LFT = cargar_articulos_lft()
+try:
+    load_dotenv()
+    ARTICULOS_LFT = cargar_articulos_lft()
+except Exception as e:
+    ARTICULOS_LFT = {}
+    logger.error(f"Error al cargar artículos LFT: {e}")
+
 REFORMAS_EXTENDIDAS = {
     "laboral": [
         "Outsourcing (2021): reforma que regula estrictamente la subcontratación laboral.",
@@ -58,9 +63,6 @@ REFORMAS_EXTENDIDAS = {
         }
     }
 }
-
-# — FastAPI app
-app = FastAPI()
 
 # 👈 Servir carpeta static
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -298,7 +300,7 @@ async def ping():
     return {"status": "ok"}
 
 
-@app.get("/")
+@app.get("/status")
 async def root():
     return {"status": "API ok", "interface": "/gradio"}
 
@@ -425,4 +427,5 @@ app = gr.mount_gradio_app(app, gradio_app, path="/gradio")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
